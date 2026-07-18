@@ -1,0 +1,117 @@
+@import "./tokens.css";
+
+* { box-sizing: border-box; margin: 0; }
+
+html, body, #root { height: 100%; }
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  line-height: 1.5;
+  color: var(--text);
+  background: transparent; /* windows decide their own surface */
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  user-select: none;
+}
+
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.02em; }
+
+/* Typographic voices — use these instead of ad-hoc font shorthands. */
+.t-hero  { font: 600 var(--text-2xl)/1.12 var(--font-display); letter-spacing: -0.02em; }
+.t-num   { font: 600 var(--text-hero)/1 var(--font-display); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+.t-label { font: 600 var(--text-xs)/1.3 var(--font-body); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-soft); }
+.t-data  { font: 500 var(--text-lg)/1.2 var(--font-data); font-variant-numeric: tabular-nums; }
+.t-soft  { font: 400 var(--text-sm)/1.5 var(--font-body); color: var(--text-soft); }
+
+/* Layered glass: blur + edge light + inner top highlight + top sheen + grain,
+   so panels read as physical material rather than a tinted rectangle. */
+.glass {
+  position: relative;
+  background: var(--glass);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    var(--shadow-glass);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(115deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 45%);
+  pointer-events: none;
+}
+.glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--grain);
+  background-size: 140px 140px;
+  opacity: var(--grain-alpha);
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+
+button {
+  font: inherit;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  border-radius: var(--radius-pill);
+  padding: var(--s3) var(--s5);
+  background: var(--accent);
+  color: var(--foam);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25), 0 1px 3px rgba(15, 30, 40, 0.15);
+  transition: filter 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+button:hover {
+  filter: brightness(1.07);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 3px 10px rgba(15, 30, 40, 0.2);
+}
+button:active { transform: scale(0.97); } /* fallback for buttons not wrapped in motion */
+button:disabled { opacity: 0.6; cursor: default; }
+
+button.ghost { background: var(--accent-soft); color: var(--accent); box-shadow: none; }
+button.ghost:hover { background: color-mix(in srgb, var(--accent) 22%, transparent); filter: none; }
+
+/* chrome for immersive gradient surfaces (break overlay) */
+button.veil {
+  background: var(--veil);
+  color: var(--foam);
+  border: 1px solid var(--veil-border);
+  box-shadow: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+button.veil:hover { background: rgba(255, 255, 255, 0.22); filter: none; }
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft); /* components overlay a value-fill gradient inline */
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--surface-raised);
+  box-shadow: 0 1px 4px rgba(15, 30, 40, 0.3);
+  transition: transform 0.15s ease;
+}
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+input[type="range"]:active::-webkit-slider-thumb { transform: scale(1); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.15s !important; transition-duration: 0.15s !important; }
+}

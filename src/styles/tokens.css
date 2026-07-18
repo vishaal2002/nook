@@ -1,0 +1,121 @@
+/* ─── Nook design tokens ─── "Tidepool" ─── */
+
+:root {
+  /* palette */
+  --ink: #0f1e28;
+  --deepwater: #16303f;
+  --mist: #ecf1f0;
+  --foam: #fafbfa;
+  --lagoon: #4fa3a0;
+  --sage: #9db8a0;
+  --dawn: #f0bfa0;
+  --dusk-violet: #8b87b8;
+
+  /* semantic — light (day) */
+  --surface: var(--mist);
+  --surface-raised: var(--foam);
+  --text: var(--ink);
+  --text-soft: rgba(15, 30, 40, 0.62);
+  --accent: var(--lagoon);
+  --accent-soft: rgba(79, 163, 160, 0.14);
+  --glass: rgba(250, 251, 250, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --glass-highlight: rgba(255, 255, 255, 0.7);
+  --grain-alpha: 0.05;
+
+  /* translucent chrome for immersive (gradient) surfaces */
+  --veil: rgba(255, 255, 255, 0.14);
+  --veil-border: rgba(255, 255, 255, 0.28);
+
+  /* type */
+  --font-display: "Sora", system-ui, sans-serif;
+  --font-body: "Instrument Sans", system-ui, sans-serif;
+  --font-data: "Spline Sans Mono", ui-monospace, monospace;
+  --text-xs: 12px; --text-sm: 14px; --text-md: 16px; --text-lg: 20px;
+  --text-xl: 28px; --text-2xl: 40px; --text-hero: 64px; --text-countdown: 120px;
+
+  /* shape & depth */
+  --radius-sm: 10px; --radius-md: 16px; --radius-lg: 24px; --radius-pill: 999px;
+  --shadow-soft: 0 8px 32px rgba(15, 30, 40, 0.08), 0 2px 8px rgba(15, 30, 40, 0.04);
+  --shadow-float: 0 16px 48px rgba(15, 30, 40, 0.14);
+  --shadow-glass:
+    0 1px 2px rgba(15, 30, 40, 0.05),
+    0 8px 24px rgba(15, 30, 40, 0.08),
+    0 32px 80px rgba(15, 30, 40, 0.07);
+  --blur-glass: blur(24px) saturate(1.3);
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+
+  /* space (4px grid) */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px; --s8: 64px;
+}
+
+/* daySignal themes — flipped by <html data-day-signal="..."> */
+[data-day-signal="dawn"] {
+  --surface: #f2ece6;
+  --surface-raised: #fbf7f2;
+  --text: var(--ink);
+  --text-soft: rgba(15, 30, 40, 0.6);
+  --accent: var(--lagoon);
+  --accent-soft: rgba(79, 163, 160, 0.14);
+  --glass: rgba(251, 247, 242, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.6);
+  --glass-highlight: rgba(255, 255, 255, 0.75);
+  --grain-alpha: 0.05;
+}
+
+[data-day-signal="dusk"] {
+  --surface: #2a2440;
+  --surface-raised: #342e4d;
+  --text: var(--foam);
+  --text-soft: rgba(250, 251, 250, 0.62);
+  --accent: var(--dawn);
+  --accent-soft: rgba(240, 191, 160, 0.16);
+  --glass: rgba(42, 36, 64, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-highlight: rgba(255, 255, 255, 0.14);
+  --grain-alpha: 0.07;
+  --shadow-glass:
+    0 1px 2px rgba(0, 0, 0, 0.2),
+    0 8px 24px rgba(0, 0, 0, 0.28),
+    0 32px 80px rgba(0, 0, 0, 0.24);
+}
+
+[data-day-signal="night"] {
+  --surface: var(--ink);
+  --surface-raised: var(--deepwater);
+  --text: var(--foam);
+  --text-soft: rgba(250, 251, 250, 0.55);
+  --accent: var(--lagoon);
+  --accent-soft: rgba(79, 163, 160, 0.18);
+  --glass: rgba(22, 48, 63, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-highlight: rgba(255, 255, 255, 0.12);
+  --grain-alpha: 0.07;
+  --shadow-glass:
+    0 1px 2px rgba(0, 0, 0, 0.25),
+    0 8px 24px rgba(0, 0, 0, 0.32),
+    0 32px 80px rgba(0, 0, 0, 0.28);
+}
+
+/* signature gradients — layered meshes, still built from the two adjacent
+   naturals per pair (plus darker/lighter values of the same hues for depth) */
+.grad-day {
+  background:
+    radial-gradient(110% 80% at 18% 8%, rgba(236, 241, 240, 0.3), transparent 55%),
+    radial-gradient(90% 70% at 82% 12%, rgba(157, 184, 160, 0.75), transparent 60%),
+    radial-gradient(120% 90% at 50% 115%, #22555a, transparent 65%),
+    linear-gradient(160deg, var(--lagoon), var(--sage));
+}
+.grad-dusk {
+  background:
+    radial-gradient(100% 75% at 20% 10%, rgba(240, 191, 160, 0.85), transparent 58%),
+    radial-gradient(90% 80% at 85% 30%, rgba(139, 135, 184, 0.8), transparent 62%),
+    radial-gradient(130% 100% at 50% 118%, #3b3560, transparent 70%),
+    linear-gradient(160deg, var(--dawn), var(--dusk-violet));
+}
+.grad-night {
+  background:
+    radial-gradient(85% 60% at 78% 12%, rgba(79, 163, 160, 0.18), transparent 60%),
+    radial-gradient(110% 80% at 20% 105%, rgba(22, 48, 63, 0.9), transparent 70%),
+    linear-gradient(160deg, var(--deepwater), var(--ink));
+}
