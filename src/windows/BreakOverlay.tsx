@@ -57,6 +57,7 @@ function makeParticles(count: number): Particle[] {
 export default function BreakOverlay() {
   const daySignal = useNook((s) => s.daySignal);
   const breakSeconds = useNook((s) => s.settings.breakSeconds);
+  const streak = useNook((s) => s.stats?.streak ?? 0);
   const grad = meshFor(daySignal);
 
   const closed = useRef(false);
@@ -115,6 +116,24 @@ export default function BreakOverlay() {
         />
       ))}
 
+      {streak > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...enter.transition, delay: 0.4 }}
+          style={{
+            position: "absolute", top: "var(--s6)", left: "50%", transform: "translateX(-50%)",
+            display: "flex", alignItems: "center", gap: 6,
+            padding: "var(--s2) var(--s4)", borderRadius: "var(--radius-pill)",
+            background: "var(--veil)", border: "1px solid var(--veil-border)",
+            backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
+            fontSize: "var(--text-sm)", fontWeight: 600,
+          }}
+        >
+          🔥 {streak}-day streak — safe while you rest
+        </motion.div>
+      )}
+
       <motion.div {...enter} style={{ position: "relative", display: "grid", placeItems: "center", gap: "var(--s6)", textAlign: "center" }}>
         <div style={{ position: "relative", width: 220, height: 220, display: "grid", placeItems: "center" }}>
           {/* static guide ring marks the full-inhale size */}
@@ -159,10 +178,13 @@ export default function BreakOverlay() {
         }}>
           {mm}:{ss}
         </div>
-        <p style={{ opacity: 0.8, fontSize: "var(--text-lg)" }}>Look at something far away. Unclench your jaw.</p>
+        <div style={{ display: "grid", gap: "var(--s2)" }}>
+          <p style={{ opacity: 0.8, fontSize: "var(--text-lg)" }}>Look at something far away. Unclench your jaw.</p>
+          <p style={{ opacity: 0.55, fontSize: "var(--text-sm)" }}>Finishing adds +10 glow</p>
+        </div>
 
         <motion.button className="veil" {...press} onClick={() => close(true)}>
-          Skip this one
+          Skip for now
         </motion.button>
       </motion.div>
 

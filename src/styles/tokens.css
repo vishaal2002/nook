@@ -19,6 +19,7 @@
   --accent: var(--lagoon);
   --accent-soft: rgba(79, 163, 160, 0.14);
   --glass: rgba(250, 251, 250, 0.6);
+  --glass-solid: rgba(250, 251, 250, 0.96);
   --glass-border: rgba(255, 255, 255, 0.55);
   --glass-highlight: rgba(255, 255, 255, 0.7);
   --grain-alpha: 0.05;
@@ -26,6 +27,13 @@
   /* translucent chrome for immersive (gradient) surfaces */
   --veil: rgba(255, 255, 255, 0.14);
   --veil-border: rgba(255, 255, 255, 0.28);
+
+  /* data marks — deeper steps of the same hues so charts clear 3:1 on the
+     surface (validated); the pastel naturals stay for ambience, not data */
+  --chart-ink: #2e7d7a;
+  --score-high: #2e7d7a;
+  --score-mid: #c07a4c;
+  --score-low: #b4573f;
 
   /* type */
   --font-display: "Sora", system-ui, sans-serif;
@@ -58,6 +66,7 @@
   --accent: var(--lagoon);
   --accent-soft: rgba(79, 163, 160, 0.14);
   --glass: rgba(251, 247, 242, 0.6);
+  --glass-solid: rgba(251, 247, 242, 0.96);
   --glass-border: rgba(255, 255, 255, 0.6);
   --glass-highlight: rgba(255, 255, 255, 0.75);
   --grain-alpha: 0.05;
@@ -71,9 +80,14 @@
   --accent: var(--dawn);
   --accent-soft: rgba(240, 191, 160, 0.16);
   --glass: rgba(42, 36, 64, 0.55);
+  --glass-solid: rgba(42, 36, 64, 0.94);
   --glass-border: rgba(255, 255, 255, 0.12);
   --glass-highlight: rgba(255, 255, 255, 0.14);
   --grain-alpha: 0.07;
+  --chart-ink: #4fa3a0;
+  --score-high: #5fb3b0;
+  --score-mid: #e0a379;
+  --score-low: #d97b5c;
   --shadow-glass:
     0 1px 2px rgba(0, 0, 0, 0.2),
     0 8px 24px rgba(0, 0, 0, 0.28),
@@ -88,9 +102,14 @@
   --accent: var(--lagoon);
   --accent-soft: rgba(79, 163, 160, 0.18);
   --glass: rgba(22, 48, 63, 0.55);
+  --glass-solid: rgba(22, 48, 63, 0.94);
   --glass-border: rgba(255, 255, 255, 0.1);
   --glass-highlight: rgba(255, 255, 255, 0.12);
   --grain-alpha: 0.07;
+  --chart-ink: #4fa3a0;
+  --score-high: #5fb3b0;
+  --score-mid: #e0a379;
+  --score-low: #d97b5c;
   --shadow-glass:
     0 1px 2px rgba(0, 0, 0, 0.25),
     0 8px 24px rgba(0, 0, 0, 0.32),

@@ -3,7 +3,9 @@ import { MotionConfig } from "motion/react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { useNook, type AvatarState, type Settings } from "./state/store";
+import { useNook, type AvatarState, type Settings, type Side, type Stats } from "./state/store";
+import { achievementDef } from "./lib/gamification";
+import { celebrateLine, disappointLine, wakeLine } from "./lib/nookVoice";
 import Dashboard from "./windows/Dashboard";
 import Companion from "./windows/Companion";
 import BreakOverlay from "./windows/BreakOverlay";
@@ -21,6 +23,80 @@ function cancelSettle() {
   clearTimeout(settleTimer);
 }
 
+let quipTimer: ReturnType<typeof setTimeout> | undefined;
+function flashQuip(text: string, ms = 4000) {
+  clearTimeout(quipTimer);
+  useNook.getState().setQuip(text);
+  quipTimer = setTimeout(() => useNook.getState().setQuip(null), ms);
+}
+
+interface WalkPayload {
+  dir: number;
+  ms: number;
+  kind: "summon" | "home" | "cancelled";
+}
+
+const s = () => useNook.getState();
+
+function onWalk(payload: WalkPayload) {
+  cancelSettle();
+  s().setWalkDir(payload.dir >= 0 ? 1 : -1);
+  s().setWalkMs(payload.ms);
+  s().setSide("float"); // centered in its window while it travels
+  s().setAvatar("walking");
+}
+
+function adoptSide(side: string) {
+  if (side !== "busy") s().setSide(side as Side);
+}
+
+function onWalkFinished(kind: string) {
+  if (kind === "summon" && s().breakDue) {
+    s().setAvatar("asking");
+    return;
+  }
+  if (s().avatar === "walking") settle("idle", 200);
+  // Back at the perch: re-derive which edge we're hugging (companion only —
+  // settle_companion moves that window, so other windows must not call it).
+  if (kind === "home" && getCurrentWindow().label === "companion") {
+    invoke<string>("settle_companion").then(adoptSide).catch(() => {});
+  }
+}
+
+function onSystemIdle() {
+  cancelSettle();
+  s().setBreakDue(false);
+  s().setAvatar("sleeping");
+  flashQuip("Going quiet for a bit…", 2500);
+}
+
+function onSystemActive() {
+  s().setAvatar("waving");
+  flashQuip(wakeLine(), 2800);
+  settle("idle", 2000);
+}
+
+function onAchievement(slug: string) {
+  const def = achievementDef(slug);
+  s().setAchievement(slug);
+  if (def) flashQuip(`${def.emoji} Badge unlocked — ${def.name}!`, 4500);
+  setTimeout(() => s().setAchievement(null), 5000);
+}
+
+function onBreakDone() {
+  s().setBreakDue(false);
+  s().setAvatar("celebrating");
+  flashQuip(celebrateLine(), 3500);
+  settle("idle", 3000);
+}
+
+function onBreakSkipped() {
+  s().setBreakDue(false);
+  s().setAvatar("disappointed");
+  flashQuip(disappointLine(), 3000);
+  settle("idle", 2500);
+}
+
 /**
  * One React bundle, three windows. Tauri gives each window a label;
  * we render the right surface for it. Keeps the design system and
@@ -30,10 +106,6 @@ export default function App() {
   const label = getCurrentWindow().label;
   const daySignal = useNook((s) => s.daySignal);
   const tickDay = useNook((s) => s.tickDay);
-  const setBreakDue = useNook((s) => s.setBreakDue);
-  const setAvatar = useNook((s) => s.setAvatar);
-  const setFocusSeconds = useNook((s) => s.setFocusSeconds);
-  const setSettings = useNook((s) => s.setSettings);
 
   useEffect(() => {
     document.documentElement.dataset.daySignal = daySignal;
@@ -45,10 +117,10 @@ export default function App() {
   }, [tickDay]);
 
   useEffect(() => {
-    invoke<Settings>("get_settings")
-      .then(setSettings)
-      .catch(() => {});
-  }, [setSettings]);
+    const { setSettings, setStats } = useNook.getState();
+    invoke<Settings>("get_settings").then(setSettings).catch(() => {});
+    invoke<Stats>("get_stats").then(setStats).catch(() => {});
+  }, []);
 
   // Poll focus as the source of truth — events can miss a tick on cold start.
   useEffect(() => {
@@ -56,7 +128,7 @@ export default function App() {
     const pull = () => {
       invoke<number>("get_focus_seconds")
         .then((n) => {
-          if (!cancelled) setFocusSeconds(n);
+          if (!cancelled) useNook.getState().setFocusSeconds(n);
         })
         .catch(() => {});
     };
@@ -66,41 +138,29 @@ export default function App() {
       cancelled = true;
       clearInterval(id);
     };
-  }, [setFocusSeconds]);
+  }, []);
 
   useEffect(() => {
     const subs = [
-      listen("nook://break-due", () => {
-        setBreakDue(true);
-        setAvatar("walking");
-        settle("asking", 1400); // walk in, then ask — escalation ladder
-      }),
-      listen("nook://system-idle", () => {
-        cancelSettle();
-        setAvatar("sleeping");
-      }),
-      listen("nook://system-active", () => {
-        setAvatar("waving");
-        settle("idle", 2000);
-      }),
-      listen<number>("nook://focus-tick", (e) => setFocusSeconds(e.payload)),
-      listen<Settings>("nook://settings-changed", (e) => setSettings(e.payload)),
-      listen("nook://break-done", () => {
-        setBreakDue(false);
-        setAvatar("celebrating");
-        settle("idle", 3000);
-      }),
-      listen("nook://break-skipped", () => {
-        setBreakDue(false);
-        setAvatar("disappointed");
-        settle("idle", 2500);
-      }),
+      // The walk event choreographs the avatar from break-due onward.
+      listen("nook://break-due", () => s().setBreakDue(true)),
+      listen<WalkPayload>("nook://walk", (e) => onWalk(e.payload)),
+      listen<string>("nook://walk-finished", (e) => onWalkFinished(e.payload)),
+      listen("nook://system-idle", onSystemIdle),
+      listen("nook://system-active", onSystemActive),
+      listen<number>("nook://focus-tick", (e) => s().setFocusSeconds(e.payload)),
+      listen<Settings>("nook://settings-changed", (e) => s().setSettings(e.payload)),
+      listen<Stats>("nook://stats-changed", (e) => s().setStats(e.payload)),
+      listen<string>("nook://achievement", (e) => onAchievement(e.payload)),
+      listen("nook://break-done", onBreakDone),
+      listen("nook://break-skipped", onBreakSkipped),
     ];
+    const unlisten = (p: Promise<() => void>) => p.then((un) => un());
     return () => {
       cancelSettle();
-      subs.forEach((p) => p.then((un) => un()));
+      subs.forEach(unlisten);
     };
-  }, [setAvatar, setBreakDue, setFocusSeconds, setSettings]);
+  }, []);
 
   let surface = <Dashboard />;
   if (label === "companion") surface = <Companion />;

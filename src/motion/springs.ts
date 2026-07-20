@@ -33,3 +33,11 @@ export const breathe = {
   animate: { scale: [1, 1.35, 1.35, 1] },
   transition: { duration: 14, times: [0, 0.29, 0.43, 1], repeat: Infinity, ease: "easeInOut" as const },
 };
+
+/** Conversation card entrance: springy pop with a touch of overshoot. */
+export const cardIn = {
+  initial: { opacity: 0, y: 16, scale: 0.92 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: 10, scale: 0.95, transition: { duration: 0.18 } },
+  transition: { type: "spring", stiffness: 360, damping: 26 } as Transition,
+};
